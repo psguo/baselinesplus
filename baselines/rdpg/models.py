@@ -24,33 +24,26 @@ class Actor(Model):
         super(Actor, self).__init__(name=name)
         self.nb_actions = nb_actions
         self.layer_norm = layer_norm
-        self.rnn_cell = tf.nn.rnn_cell.BasicRNNCell(64)
-        self.initial_state = self.rnn_cell.zero_state(32, dtype=tf.float32)
+        self.lstm_cell = tc.rnn.BasicLSTMCell(64, forget_bias=1.0)
 
-    def __call__(self, obs, reuse=False):
+        self.decoding_weights = tf.Variable(tf.random_normal([64, nb_actions]))
+        self.decoding_biases = tf.Variable(tf.random_normal([nb_actions]))
+
+    def __call__(self, obss, reuse=False):
         with tf.variable_scope(self.name) as scope:
             if reuse:
                 scope.reuse_variables()
 
-            x = obs
-            x = tf.layers.dense(x, 64)
-            if self.layer_norm:
-                x = tc.layers.layer_norm(x, center=True, scale=True)
-            x = tf.nn.relu(x)
+            x = obss
 
-            x = tf.layers.dense(x, 64)
-            if self.layer_norm:
-                x = tc.layers.layer_norm(x, center=True, scale=True)
-            x = tf.nn.relu(x)
+            x = tf.unstack(x, x.shape(1), axis=1)
 
-            hx, cx = tf.nn.dynamic_rnn(self.rnn_cell, x, initial_state=self.initial_state, dtype=tf.float32)
-            self.hx = hx
-            self.cx = cx
-            x = hx
+            x, state = tc.rnn.static_rnn(self.lstm_cell, x, dtype=tf.float32)
 
-            x = tf.layers.dense(x, self.nb_actions,
-                                kernel_initializer=tf.random_uniform_initializer(minval=-3e-3, maxval=3e-3))
-            x = tf.nn.tanh(x)
+            for i in range(len(x)):
+                x[i] = tf.matmul(x[i], self.decoding_weights) + self.decoding_biases
+                x[i] = tf.nn.tanh(x[i])
+
         return x
 
 
@@ -58,25 +51,34 @@ class Critic(Model):
     def __init__(self, name='critic', layer_norm=True):
         super(Critic, self).__init__(name=name)
         self.layer_norm = layer_norm
+        self.lstm_cell = tc.rnn.BasicLSTMCell(64, forget_bias=1.0)
 
-    def __call__(self, obs, action, reuse=False):
+        self.decoding_weights = tf.Variable(tf.random_normal([64, 1]))
+        self.decoding_biases = tf.Variable(tf.random_normal([1]))
+
+    def __call__(self, obss, actions, reuse=False):
+        '''
+
+        :param obss: N*t*Obs_dim
+        :param actions: N*t*Act_dim
+        :param reuse: if reuse old variables
+        :return: [N*1]*t
+        '''
+
         with tf.variable_scope(self.name) as scope:
             if reuse:
                 scope.reuse_variables()
 
-            x = obs
-            x = tf.layers.dense(x, 64)
-            if self.layer_norm:
-                x = tc.layers.layer_norm(x, center=True, scale=True)
-            x = tf.nn.relu(x)
+            x = obss
 
-            x = tf.concat([x, action], axis=-1)
-            x = tf.layers.dense(x, 64)
-            if self.layer_norm:
-                x = tc.layers.layer_norm(x, center=True, scale=True)
-            x = tf.nn.relu(x)
+            x = tf.concat([x, actions], axis=-1)
+            x = tf.unstack(x, x.shape(1), axis=1)
 
-            x = tf.layers.dense(x, 1, kernel_initializer=tf.random_uniform_initializer(minval=-3e-3, maxval=3e-3))
+            x, state = tc.rnn.static_rnn(self.lstm_cell, x, dtype=tf.float32)
+
+            for i in range(len(x)):
+                x[i] = tf.matmul(x[i], self.decoding_weights) + self.decoding_biases
+
         return x
 
     @property
