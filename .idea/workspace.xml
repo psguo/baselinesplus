@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="231604cf-811d-4e59-8842-5aa872496c61" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/baselines/common/mpi_running_mean_std.py" afterPath="$PROJECT_DIR$/baselines/common/mpi_running_mean_std.py" />
       <change beforePath="$PROJECT_DIR$/baselines/rdpg/rdpg.py" afterPath="$PROJECT_DIR$/baselines/rdpg/rdpg.py" />
       <change beforePath="$PROJECT_DIR$/baselines/rdpg/training.py" afterPath="$PROJECT_DIR$/baselines/rdpg/training.py" />
     </list>
@@ -31,8 +29,8 @@
       <file leaf-file-name="memory.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/baselines/rdpg/memory.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="54">
-              <caret line="3" column="0" lean-forward="true" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+            <state relative-caret-position="382">
+              <caret line="36" column="43" lean-forward="false" selection-start-line="36" selection-start-column="33" selection-end-line="36" selection-end-column="43" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -40,32 +38,26 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="memory.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/baselines/ddpg/memory.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="774">
-              <caret line="43" column="26" lean-forward="false" selection-start-line="43" selection-start-column="26" selection-end-line="43" selection-end-column="26" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="rdpg.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="rdpg.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/baselines/rdpg/rdpg.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="286" column="48" lean-forward="true" selection-start-line="286" selection-start-column="48" selection-end-line="286" selection-end-column="48" />
-              <folding />
+            <state relative-caret-position="672">
+              <caret line="165" column="71" lean-forward="false" selection-start-line="165" selection-start-column="71" selection-end-line="165" selection-end-column="71" />
+              <folding>
+                <element signature="e#0#21#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="training.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="training.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/baselines/rdpg/training.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-612">
-              <caret line="2" column="25" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="690">
+              <caret line="117" column="39" lean-forward="false" selection-start-line="117" selection-start-column="39" selection-end-line="117" selection-end-column="39" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -90,12 +82,16 @@
       <find>critic_with_actor_tf</find>
       <find>time_major</find>
       <find>RNN</find>
-      <find>ddpg</find>
       <find>obs1</find>
-      <find>memory</find>
-      <find>sample</find>
       <find>deque</find>
       <find>length</find>
+      <find>memory</find>
+      <find>sample</find>
+      <find>ddpg</find>
+      <find>store_transition</find>
+      <find>obss0</find>
+      <find>obs0</find>
+      <find>setup_param_noisesetup_param_noise</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -106,12 +102,12 @@
       <list>
         <option value="$PROJECT_DIR$/baselines/rdpg/rnn.py" />
         <option value="$PROJECT_DIR$/baselines/rdpg/models.py" />
-        <option value="$PROJECT_DIR$/baselines/rdpg/training.py" />
         <option value="$PROJECT_DIR$/baselines/common/mpi_running_mean_std.py" />
         <option value="$PROJECT_DIR$/baselines/rdpg/main.py" />
-        <option value="$PROJECT_DIR$/baselines/rdpg/rdpg.py" />
         <option value="$PROJECT_DIR$/baselines/ddpg/memory.py" />
         <option value="$PROJECT_DIR$/baselines/rdpg/memory.py" />
+        <option value="$PROJECT_DIR$/baselines/rdpg/training.py" />
+        <option value="$PROJECT_DIR$/baselines/rdpg/rdpg.py" />
       </list>
     </option>
   </component>
@@ -331,6 +327,14 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/baselines/ddpg/memory.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="774">
+          <caret line="43" column="26" lean-forward="false" selection-start-line="43" selection-start-column="26" selection-end-line="43" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/baselines/rdpg/main.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="473">
@@ -341,37 +345,33 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/baselines/rdpg/training.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="690">
+          <caret line="117" column="39" lean-forward="false" selection-start-line="117" selection-start-column="39" selection-end-line="117" selection-end-column="39" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/baselines/rdpg/memory.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="54">
-          <caret line="3" column="0" lean-forward="true" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+        <state relative-caret-position="382">
+          <caret line="36" column="43" lean-forward="false" selection-start-line="36" selection-start-column="33" selection-end-line="36" selection-end-column="43" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/baselines/ddpg/memory.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="774">
-          <caret line="43" column="26" lean-forward="false" selection-start-line="43" selection-start-column="26" selection-end-line="43" selection-end-column="26" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/baselines/rdpg/rdpg.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="286" column="48" lean-forward="true" selection-start-line="286" selection-start-column="48" selection-end-line="286" selection-end-column="48" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/baselines/rdpg/training.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-612">
-          <caret line="2" column="25" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="672">
+          <caret line="165" column="71" lean-forward="false" selection-start-line="165" selection-start-column="71" selection-end-line="165" selection-end-column="71" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
