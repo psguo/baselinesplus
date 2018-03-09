@@ -45,9 +45,17 @@ class Actor(Model):
 
             x, state = tf.nn.dynamic_rnn(self.lstm_cell, x, dtype=tf.float32)
 
-            x = tf.layers.dense(x, self.nb_actions, kernel_initializer=tf.random_uniform_initializer(minval=-3e-3, maxval=3e-3))
-            x = tf.nn.tanh(x)
-        return x
+            outputs, x = tf.nn.dynamic_rnn(self.lstm_cell, x, dtype=tf.float32)
+            shape = tf.shape(outputs)
+            shape[2] = self.nb_actions
+            outputs = tf.reshape(
+                tf.layers.dense(tf.reshape(outputs, [-1, 64]),
+                                self.nb_actions,
+                                kernel_initializer=tf.random_uniform_initializer(minval=-3e-3, maxval=3e-3)),
+                shape)
+
+            outputs = tf.nn.tanh(outputs)
+        return outputs
 
 
 class Critic(Model):
@@ -58,6 +66,7 @@ class Critic(Model):
             self.lstm_cell = tc.rnn.LayerNormBasicLSTMCell(64)
         else:
             self.lstm_cell = tc.rnn.BasicLSTMCell(64)
+
 
     def __call__(self, obss, actions, reuse=False):
         '''
@@ -78,9 +87,14 @@ class Critic(Model):
             x = tf.unstack(x, x.shape(1), axis=1)
 
             outputs, x = tf.nn.dynamic_rnn(self.lstm_cell, x, dtype=tf.float32)
-
-            x = tf.layers.dense(x, 1, kernel_initializer=tf.random_uniform_initializer(minval=-3e-3, maxval=3e-3))
-        return x
+            shape = tf.shape(outputs)
+            shape[2] = 1
+            outputs = tf.reshape(
+                tf.layers.dense(tf.reshape(outputs, [-1, 64]),
+                                1,
+                                kernel_initializer=tf.random_uniform_initializer(minval=-3e-3, maxval=3e-3)),
+                shape)
+        return outputs
 
     @property
     def output_vars(self):

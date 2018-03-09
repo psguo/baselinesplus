@@ -266,6 +266,7 @@ class RDPG(object):
         else:
             action = self.sess.run(actor_tf, feed_dict=feed_dict)
             q = None
+        action = action[:,-1,:] # change 1*T*|A| to 1*1*|A|
         action = action.flatten()
         if self.action_noise is not None and apply_noise:
             noise = self.action_noise()
