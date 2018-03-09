@@ -33,7 +33,6 @@ class RunningMeanStd(object):
                      tf.assign_add(self._sumsq, newsumsq),
                      tf.assign_add(self._count, newcount)])
 
-
     def update(self, x):
         x = x.astype('float64')
         n = int(np.prod(self.shape))

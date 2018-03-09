@@ -67,11 +67,11 @@ class RDPG(object):
         adaptive_param_noise=True, adaptive_param_noise_policy_threshold=.1,
         critic_l2_reg=0., actor_lr=1e-4, critic_lr=1e-3, clip_norm=None, reward_scale=1.):
         # Inputs.
-        self.obs0 = tf.placeholder(tf.float32, shape=(None,) + observation_shape, name='obs0')
-        self.obs1 = tf.placeholder(tf.float32, shape=(None,) + observation_shape, name='obs1')
-        self.terminals1 = tf.placeholder(tf.float32, shape=(None, 1), name='terminals1')
-        self.rewards = tf.placeholder(tf.float32, shape=(None, 1), name='rewards')
-        self.actions = tf.placeholder(tf.float32, shape=(None,) + action_shape, name='actions')
+        self.obss0 = tf.placeholder(tf.float32, shape=(None, None) + observation_shape, name='obs0')
+        self.obss1 = tf.placeholder(tf.float32, shape=(None, None) + observation_shape, name='obs1')
+        self.terminals1 = tf.placeholder(tf.float32, shape=(None, None, 1), name='terminals1')
+        self.rewards = tf.placeholder(tf.float32, shape=(None, None, 1), name='rewards')
+        self.actions = tf.placeholder(tf.float32, shape=(None, None) + action_shape, name='actions')
         self.critic_target = tf.placeholder(tf.float32, shape=(None, 1), name='critic_target')
         self.param_noise_stddev = tf.placeholder(tf.float32, shape=(), name='param_noise_stddev')
 
@@ -103,10 +103,10 @@ class RDPG(object):
                 self.obs_rms = RunningMeanStd(shape=observation_shape)
         else:
             self.obs_rms = None
-        normalized_obs0 = tf.clip_by_value(normalize(self.obs0, self.obs_rms),
-            self.observation_range[0], self.observation_range[1])
-        normalized_obs1 = tf.clip_by_value(normalize(self.obs1, self.obs_rms),
-            self.observation_range[0], self.observation_range[1])
+        normalized_obss0 = tf.clip_by_value(normalize(self.obss0, self.obs_rms),
+                                           self.observation_range[0], self.observation_range[1])
+        normalized_obss1 = tf.clip_by_value(normalize(self.obss1, self.obs_rms),
+                                           self.observation_range[0], self.observation_range[1])
 
         # Return normalization.
         if self.normalize_returns:
@@ -124,17 +124,17 @@ class RDPG(object):
         self.target_critic = target_critic
 
         # Create networks and core TF parts that are shared across setup parts.
-        self.actor_tf = actor(normalized_obs0)
-        self.normalized_critic_tf = critic(normalized_obs0, self.actions)
+        self.actor_tf = actor(normalized_obss0)
+        self.normalized_critic_tf = critic(normalized_obss0, self.actions)
         self.critic_tf = denormalize(tf.clip_by_value(self.normalized_critic_tf, self.return_range[0], self.return_range[1]), self.ret_rms)
-        self.normalized_critic_with_actor_tf = critic(normalized_obs0, self.actor_tf, reuse=True)
+        self.normalized_critic_with_actor_tf = critic(normalized_obss0, self.actor_tf, reuse=True)
         self.critic_with_actor_tf = denormalize(tf.clip_by_value(self.normalized_critic_with_actor_tf, self.return_range[0], self.return_range[1]), self.ret_rms)
-        Q_obs1 = denormalize(target_critic(normalized_obs1, target_actor(normalized_obs1)), self.ret_rms)
+        Q_obs1 = denormalize(target_critic(normalized_obss1, target_actor(normalized_obss1)), self.ret_rms)
         self.target_Q = self.rewards + (1. - self.terminals1) * gamma * Q_obs1
 
         # Set up parts.
         if self.param_noise is not None:
-            self.setup_param_noise(normalized_obs0)
+            self.setup_param_noise(normalized_obss0)
         self.setup_actor_optimizer()
         self.setup_critic_optimizer()
         if self.normalize_returns and self.enable_popart:
@@ -252,12 +252,13 @@ class RDPG(object):
         self.stats_ops = ops
         self.stats_names = names
 
-    def pi(self, obs, apply_noise=True, compute_Q=True):
+    def pi(self, obss, apply_noise=True, compute_Q=True):
+        obss = np.asarray([obss])
         if self.param_noise is not None and apply_noise:
             actor_tf = self.perturbed_actor_tf
         else:
             actor_tf = self.actor_tf
-        feed_dict = {self.obs0: [obs]}
+        feed_dict = {self.obss0: [obss]}
         if compute_Q:
             action, q = self.sess.run([actor_tf, self.critic_with_actor_tf], feed_dict=feed_dict)
         else:
@@ -283,9 +284,9 @@ class RDPG(object):
 
         if self.normalize_returns and self.enable_popart:
             old_mean, old_std, target_Q = self.sess.run([self.ret_rms.mean, self.ret_rms.std, self.target_Q], feed_dict={
-                self.obs1: batch['obs1'],
-                self.rewards: batch['rewards'],
-                self.terminals1: batch['terminals1'].astype('float32'),
+                self.obss1: batch['history'][:,:],
+                self.rewards: batch['history'],
+                self.terminals1: batch['history'].astype('float32'),
             })
             self.ret_rms.update(target_Q.flatten())
             self.sess.run(self.renormalize_Q_outputs_op, feed_dict={
@@ -304,7 +305,7 @@ class RDPG(object):
             # assert (np.abs(target_Q - target_Q_new) < 1e-3).all()
         else:
             target_Q = self.sess.run(self.target_Q, feed_dict={
-                self.obs1: batch['obs1'],
+                self.obss1: batch['obs1'],
                 self.rewards: batch['rewards'],
                 self.terminals1: batch['terminals1'].astype('float32'),
             })
@@ -312,7 +313,7 @@ class RDPG(object):
         # Get all gradients and perform a synced update.
         ops = [self.actor_grads, self.actor_loss, self.critic_grads, self.critic_loss]
         actor_grads, actor_loss, critic_grads, critic_loss = self.sess.run(ops, feed_dict={
-            self.obs0: batch['obs0'],
+            self.obss0: batch['obs0'],
             self.actions: batch['actions'],
             self.critic_target: target_Q,
         })
@@ -337,7 +338,7 @@ class RDPG(object):
             # This allows us to estimate the change in value for the same set of inputs.
             self.stats_sample = self.memory.sample(batch_size=self.batch_size)
         values = self.sess.run(self.stats_ops, feed_dict={
-            self.obs0: self.stats_sample['obs0'],
+            self.obss0: self.stats_sample['obs0'],
             self.actions: self.stats_sample['actions'],
         })
 
@@ -360,7 +361,7 @@ class RDPG(object):
             self.param_noise_stddev: self.param_noise.current_stddev,
         })
         distance = self.sess.run(self.adaptive_policy_distance, feed_dict={
-            self.obs0: batch['obs0'],
+            self.obss0: batch['obs0'],
             self.param_noise_stddev: self.param_noise.current_stddev,
         })
 

@@ -68,9 +68,11 @@ def train(env, nb_epochs, nb_epoch_cycles, render_eval, reward_scale, render, pa
         for epoch in range(nb_epochs):
             for cycle in range(nb_epoch_cycles):
                 # Perform rollouts.
+                obss = []
                 for t_rollout in range(nb_rollout_steps):
+                    obss.append(obs)
                     # Predict next action.
-                    action, q = agent.pi(obs, apply_noise=True, compute_Q=True)
+                    action, q = agent.pi(obss, apply_noise=True, compute_Q=True)
                     assert action.shape == env.action_space.shape
 
                     # Execute next action.
